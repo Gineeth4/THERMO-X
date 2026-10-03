@@ -1,0 +1,23 @@
+{
+  "horizon_s": 30.0,
+  "sample_count": 420,
+  "training_samples": 336,
+  "test_samples": 84,
+  "mae_c": 0.10730535057635503,
+  "rmse_c": 0.1295706250253834,
+  "r2": -1.4973307652789427,
+  "model": "RandomForestRegressor",
+  "feature_columns": [
+    "temperature_c",
+    "temperature_rate_c_per_s",
+    "workload_pct",
+    "heater_power_w",
+    "flow_rate_lpm",
+    "coolant_inlet_c",
+    "coolant_outlet_c",
+    "delta_t_c",
+    "ambient_temperature_c",
+    "pump_speed_pct",
+    "fan_speed_pct"
+  ]
+}

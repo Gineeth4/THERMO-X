@@ -1,0 +1,29 @@
+{
+  "best_model": "XGBoost",
+  "selection_metric": "MAE_C",
+  "horizon_s": 30.0,
+  "feature_count": 20,
+  "feature_columns": [
+    "temperature_c",
+    "workload_pct",
+    "heater_power_w",
+    "flow_rate_lpm",
+    "coolant_inlet_c",
+    "coolant_outlet_c",
+    "delta_t_c",
+    "ambient_temperature_c",
+    "pump_speed_pct",
+    "fan_speed_pct",
+    "temperature_rate_c_per_s",
+    "temperature_lag_1s_c",
+    "temperature_lag_5s_c",
+    "temperature_lag_15s_c",
+    "workload_lag_1s_pct",
+    "flow_lag_1s_lpm",
+    "temperature_rolling_mean_5s_c",
+    "temperature_rolling_mean_15s_c",
+    "workload_rolling_mean_5s_pct",
+    "flow_rolling_mean_5s_lpm"
+  ],
+  "device": "cpu"
+}

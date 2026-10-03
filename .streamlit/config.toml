@@ -1,0 +1,36 @@
+[theme]
+
+base = "dark"
+
+primaryColor = "#22d3ee"
+
+backgroundColor = "#070b14"
+
+secondaryBackgroundColor = "#0d1420"
+
+textColor = "#f8fafc"
+
+font = "sans serif"
+
+
+[server]
+
+headless = false
+
+port = 8501
+
+runOnSave = true
+
+
+[browser]
+
+serverAddress = "localhost"
+
+serverPort = 8501
+
+gatherUsageStats = false
+
+
+[client]
+
+showErrorDetails = "full"
