@@ -60,7 +60,21 @@ class WorkloadProfile:
         server_id: str,
     ) -> tuple[float, float]:
         """
-        Return:
+        Return the workload and simulated heater power for a server.
+
+        Behaviour:
+
+            1. If the timestamp is inside a configured segment,
+            return that segment's values.
+
+            2. If the timestamp occurs after the final segment,
+            hold the final segment's operating state.
+
+        Holding the final state prevents a longer simulation from
+        unexpectedly turning the workload and heat source to zero
+        merely because the original schedule ended.
+
+        Returns:
 
             (workload_percent, heater_power_w)
         """
@@ -70,20 +84,62 @@ class WorkloadProfile:
         )
 
         if not segments:
-            return 0.0, 0.0
+            return (
+                0.0,
+                0.0,
+            )
+
+        # --------------------------------------------------------
+        # Normal case:
+        # find the segment containing the current timestamp.
+        # --------------------------------------------------------
 
         for segment in segments:
 
             if segment.contains(
                 timestamp_s
             ):
+
                 return (
                     segment.workload_pct,
                     segment.heater_power_w,
                 )
 
-        # Return zero after the experiment ends.
-        return 0.0, 0.0
+        # --------------------------------------------------------
+        # Important fallback:
+        #
+        # If the simulation continues beyond the final configured
+        # segment, HOLD the last operating state instead of
+        # silently changing to 0% / 0 W.
+        #
+        # This is particularly important for demonstrations where
+        # the user selects a duration longer than the base workload
+        # schedule.
+        # --------------------------------------------------------
+
+        final_segment = (
+            segments[-1]
+        )
+
+        if (
+            timestamp_s
+            >= final_segment.end_s
+        ):
+
+            return (
+                final_segment.workload_pct,
+                final_segment.heater_power_w,
+            )
+
+    # --------------------------------------------------------
+    # If a timestamp somehow occurs before the first segment,
+    # return a safe zero state.
+    # --------------------------------------------------------
+
+        return (
+            0.0,
+            0.0,
+        )
 
 
 def create_demo_profile(
@@ -92,12 +148,16 @@ def create_demo_profile(
     """
     Create the initial two-zone THERMO-X workload.
 
-    The workload stages are intentionally simple:
+    Sequence:
 
         LOW
         MEDIUM
         HIGH
         LOW
+
+    The final LOW segment is intentionally extended beyond the
+    normal 240-second demonstration so longer simulations do
+    not fall into an artificial 0% / 0 W state.
 
     Heater powers are software test conditions only.
     """
@@ -111,8 +171,9 @@ def create_demo_profile(
         server_ids
     ):
 
-        # Offset the second server's workload to create
-        # a slightly different thermal demand profile.
+        # SERVER_B has a 15-second phase offset so the two
+        # thermal zones do not transition at exactly the same
+        # time.
         offset = (
             0.0
             if index == 0
@@ -122,31 +183,58 @@ def create_demo_profile(
         schedules[
             server_id
         ] = [
+
+            # ------------------------------------------------
+            # LOW LOAD
+            # ------------------------------------------------
             WorkloadSegment(
                 start_s=0.0,
+
                 end_s=60.0 + offset,
+
                 workload_pct=20.0,
+
                 heater_power_w=20.0,
             ),
 
+            # ------------------------------------------------
+            # MEDIUM LOAD
+            # ------------------------------------------------
             WorkloadSegment(
                 start_s=60.0 + offset,
+
                 end_s=120.0 + offset,
+
                 workload_pct=50.0,
+
                 heater_power_w=50.0,
             ),
 
+            # ------------------------------------------------
+            # HIGH LOAD
+            # ------------------------------------------------
             WorkloadSegment(
                 start_s=120.0 + offset,
+
                 end_s=180.0 + offset,
+
                 workload_pct=90.0,
+
                 heater_power_w=90.0,
             ),
 
+            # ------------------------------------------------
+            # LOW LOAD
+            #
+            # Continue indefinitely.
+            # ------------------------------------------------
             WorkloadSegment(
                 start_s=180.0 + offset,
-                end_s=240.0 + offset,
+
+                end_s=float("inf"),
+
                 workload_pct=20.0,
+
                 heater_power_w=20.0,
             ),
         ]
